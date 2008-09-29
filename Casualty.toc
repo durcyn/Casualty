@@ -1,0 +1,14 @@
+## Interface: 20400
+## Title: Casualty
+## Notes: Monitors for friendly deaths and announces them as in Myth: The Fallen Lords
+## Author: Carys of Terenas
+## OptionalDeps: Ace3, LibSink-2.0, LibSharedMedia-3.0
+## X-Embeds: Ace3, LibSink-2.0, LibSharedMedia-3.0
+## SavedVariables: CasualtyDB
+## Version: 3.0
+
+embeds.xml
+
+locale-enUS.lua
+locale-zhTW.lua
+Casualty.lua
