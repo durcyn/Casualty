@@ -1,16 +1,16 @@
 package-as: Casualty
 
 externals:
-    /libs/AceConfig-3.0: http://svn.wowace.com/wowace/trunk/Ace3/AceConfig-3.0/
-    /libs/AceLocale-3.0: http://svn.wowace.com/wowace/trunk/Ace3/AceLocale-3.0
-    /libs/AceDBOptions-3.0: http://svn.wowace.com/wowace/trunk/Ace3/AceDBOptions-3.0/
-    /libs/AceTimer-3.0: http://svn.wowace.com/wowace/trunk/Ace3/AceTimer-3.0/
-    /libs/AceEvent-3.0: http://svn.wowace.com/wowace/trunk/Ace3/AceEvent-3.0
-    /libs/LibSink-2.0: http://svn.wowace.com/wowace/trunk/LibSink-2.0/LibSink-2.0/
-    /libs/AceConsole-3.0: http://svn.wowace.com/wowace/trunk/Ace3/AceConsole-3.0/
-    /libs/LibStub: http://svn.wowace.com/wowace/tags/LibStub/1.0
-    /libs/CallbackHandler-1.0: http://svn.wowace.com/wowace/trunk/Ace3/CallbackHandler-1.0/
-    /libs/AceGUI-3.0: http://svn.wowace.com/wowace/trunk/Ace3/AceGUI-3.0/
-    /libs/AceDB-3.0: http://svn.wowace.com/wowace/trunk/Ace3/AceDB-3.0/
-    /libs/LibSharedMedia-3.0: http://svn.wowace.com/wowace/trunk/LibSharedMedia-3.0/LibSharedMedia-3.0
-    /libs/AceAddon-3.0: http://svn.wowace.com/wowace/trunk/Ace3/AceAddon-3.0/
+    libs/AceAddon-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceAddon-3.0
+    libs/AceConfig-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConfig-3.0
+    libs/AceConsole-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceConsole-3.0
+    libs/AceDB-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDB-3.0
+    libs/AceDBOptions-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceDBOptions-3.0
+    libs/AceEvent-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceEvent-3.0
+    libs/AceGUI-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceGUI-3.0
+    libs/AceLocale-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceLocale-3.0
+    libs/AceTimer-3.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceTimer-3.0
+    libs/CallbackHandler-1.0: svn://svn.wowace.com/wow/ace3/mainline/trunk/CallbackHandler-1.0
+    libs/LibSharedMedia-3.0: svn://svn.wowace.com/wow/lib-shared-media-3-0/mainline/trunk/LibSharedMedia-3.0
+    libs/LibSink-2.0: svn://svn.wowace.com/wow/lib-sink-2-0/mainline/trunk/LibSink-2.0
+    libs/LibStub: svn://svn.wowace.com/wow/libstub/mainline/tags/1.0
