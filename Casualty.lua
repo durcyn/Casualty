@@ -230,7 +230,7 @@ function Casualty:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventType, sourc
 	local isPlayer = (bitband(destFlags, COMBATLOG_OBJECT_TYPE_PLAYER) ~= 0)
 	local isGroup  = (bitband(destFlags, COMBATLOG_OBJECT_AFFILIATION_OUTSIDER) == 0)
 
-	if not isPlayer or not isGroup then return end
+	if not isPlayer or not isGroup or UnitIsFeignDeath(destName) then return end
 
 	if getn(self.dead) == 0 then
 		self:ScheduleTimer(Casualty.Report, self.db.profile.delay)
