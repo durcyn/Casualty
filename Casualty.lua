@@ -2,20 +2,18 @@ Casualty = LibStub("AceAddon-3.0"):NewAddon("Casualty", "AceEvent-3.0", "AceCons
 local addon = Casualty
 local db
 
-local AceConfig = LibStub("AceConfig-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("Casualty")
 local media = LibStub("LibSharedMedia-3.0")
 
-local _G=getfenv(0)
-
-local bitband = _G.bit.band
-local tinsert = _G.table.insert
-local getn = _G.table.getn 
-local strsub = _G.string.sub
-local ipairs = _G.ipairs
 local pairs = _G.pairs
 local unpack = _G.unpack
+local wipe = _G.wipe
+
+local fmt = _G.string.format
+local join = _G.string.join
+local bitband = _G.bit.band
+local tinsert = _G.table.insert
+local tconcat = _G.table.concat
 
 local COMBATLOG_OBJECT_TYPE_PLAYER = _G.COMBATLOG_OBJECT_TYPE_PLAYER
 local COMBATLOG_OBJECT_AFFILIATION_OUTSIDER = _G.COMBATLOG_OBJECT_AFFILIATION_OUTSIDER
@@ -209,7 +207,7 @@ function addon:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("CasualtyDB", defaults, "Default")
 	db = self.db.profile
 
-	AceConfig:RegisterOptionsTable("Casualty", options)
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("Casualty", options)
 	options.args.profile = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 
 	self:RegisterChatCommand("casualty", function() LibStub("AceConfigDialog-3.0"):Open("Casualty") end)
@@ -218,9 +216,9 @@ function addon:OnInitialize()
 
 	self:SetSinkStorage(self.db.profile.sinkOptions)
 
-	self.units = {}
 	self.dead = {}
-	self.group = nil
+
+	self.db.RegisterCallback(self, "OnProfileChanged", function() db = self.db.profile end)
 
 	media:Register("sound", "Casualty: Single Casualty", [[Interface\Addons\Casualty\Sounds\casualty.wav]])
 	media:Register("sound", "Casualty: Multiple Casualties", [[Interface\Addons\Casualty\Sounds\casualties.wav]])
@@ -236,32 +234,33 @@ function addon:OnDisable()
 	self:UnregisterAllEvents()
 end
 
-function addon:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags, ...)
-	if (eventType ~= "UNIT_DIED") then return end
-	local isPlayer = (bitband(destFlags, COMBATLOG_OBJECT_TYPE_PLAYER) ~= 0)
-	local isGroup  = (bitband(destFlags, COMBATLOG_OBJECT_AFFILIATION_OUTSIDER) == 0)
+function addon:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags)
+	if eventType == "UNIT_DIED" then
+		if UnitIsFeignDeath(destName) then return end
 
-	if not isPlayer or not isGroup or UnitIsFeignDeath(destName) then return end
-
-	if getn(self.dead) == 0 then
-		self:ScheduleTimer(addon.Report, self.db.profile.delay)
+		local isPlayer = (bitband(destFlags, COMBATLOG_OBJECT_TYPE_PLAYER) ~= 0)
+		local isGroup  = (bitband(destFlags, COMBATLOG_OBJECT_AFFILIATION_OUTSIDER) == 0)
+		
+		if isPlayer and isGroup then
+			if #self.dead == 0 then
+				self:ScheduleTimer(addon.Report, db.delay)
+			end
+			tinsert(self.dead, destName)
+		end
 	end
-	tinsert(self.dead, destName)
 end
 
 function addon:WipeCheck()
 	local result = true
 	if UnitInRaid("player") then
 		for i=1,GetNumRaidMembers() do
-			local unit = "raid"..i
-			if not UnitIsDeadOrGhost(unit) then
+			if not UnitIsDeadOrGhost(fmt("raid%s", i)) then
 				result = false
 			end
 		end
 	elseif GetNumPartyMembers ~= 0 then
 		for i=0, GetNumPartyMembers() do
-			local unit = "party"..i
-			if not UnitIsDeadOrGhost(unit) then
+			if not UnitIsDeadOrGhost(fmt("party%s", i)) then
 				result = false
 			end
 		end
@@ -273,39 +272,36 @@ end
 
 function addon:Report()
 	local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("Casualty")
-	local dead = getn(addon.dead)
-	local wipe = addon:WipeCheck()
-	local msg = L["Casualty"]..": "
+	local dead = #addon.dead
+	local msg = fmt("|cffffff7f%s:|r %s", L["Casualty"], "%s")
 	local snd = db.sound.casualty
 
-	if db.wipe and wipe then
-		msg = L["Casualty"]..": "..L["No Survivors"]
+	if db.wipe and addon:WipeCheck() then
+		msg = fmt("|cffffff7f%s:|r %s", L["Casualty"], L["No Survivors"])
 		snd = db.sound.wipe
 	else
 		if dead > 1 then
-			msg = L["Casualties"]..": "
+			msg = fmt("|cffffff7f%s:|r %s", L["Casualties"], "%s")
 			if dead < db.mass then
 				snd = db.sound.casualties
 			else
 				snd = db.sound.catastrophe
 			end
 		end
-		for k,v in ipairs(addon.dead) do
-			msg = msg .. v..", "
-		end
-		msg = strsub(msg, 1, -3)
+		msg = fmt(msg, tconcat(addon.dead, ", "))
 	end
-
 	addon:Pour(msg, db.color.r, db.color.g, db.color.b)
 	if db.noise then
 		local media = LibStub("LibSharedMedia-3.0")
 		local sound = media:Fetch("sound",snd)
 		if sound then PlaySoundFile(sound) end
 	end
-	addon.dead = {}
+	wipe(addon.dead)
 end
 
 function addon:Test()
-	self.dead = {"Alice", "Bob", "Charlie"}
-	self:ScheduleTimer(addon.Report, self.db.profile.delay)
+	tinsert(self.dead, "Alice")
+	tinsert(self.dead, "Bob")
+	tinsert(self.dead, "Charlie")
+	addon:Report()
 end
