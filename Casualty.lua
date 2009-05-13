@@ -305,3 +305,4 @@ function addon:Test()
 	tinsert(self.dead, "Charlie")
 	addon:Report()
 end
+
