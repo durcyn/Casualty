@@ -1,14 +1,12 @@
-Casualty = LibStub("AceAddon-3.0"):NewAddon("Casualty", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0", "LibSink-2.0")
-local addon = Casualty
-local db
-
+local Casualty = LibStub("AceAddon-3.0"):NewAddon("Casualty", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0", "LibSink-2.0")
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("Casualty")
 local media = LibStub("LibSharedMedia-3.0")
+
+local dead = {}
 
 local pairs = _G.pairs
 local unpack = _G.unpack
 local wipe = _G.wipe
-
 local fmt = _G.string.format
 local join = _G.string.join
 local bitband = _G.bit.band
@@ -25,6 +23,7 @@ local GetNumPartyMembers = _G.GetNumPartyMembers
 local GetNumRaidMembers = _G.GetNumRaidMembers
 local PlaySoundFile = _G.PlaySoundFile
 
+local db
 local defaults = {
 	profile = {
 		sinkOptions = {
@@ -34,7 +33,6 @@ local defaults = {
 		mass = 8,
 		catastrophe = true,
 		wipe = true,
-		sinkOptions = {},
 		noise = true,
 		sound = {
 			casualty = "Casualty: Single Casualty",
@@ -54,7 +52,7 @@ local options = {
 			name = L["Test"],
 			desc = L["Test an announcement using current settings"],
 			func = function()
-				addon:Test()
+				Casualty:Test()
 			end
 		},
 		casualty = {
@@ -143,7 +141,7 @@ local options = {
 				},
 			},
 		},
-		output = addon:GetSinkAce3OptionsDataTable(),
+		output = Casualty:GetSinkAce3OptionsDataTable(),
 		sound = {
 			type = 'group',
 			name = L["Sound"],
@@ -202,23 +200,19 @@ local options = {
 	},
 }
 
-
-function addon:OnInitialize()
+function Casualty:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("CasualtyDB", defaults, "Default")
 	db = self.db.profile
-
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("Casualty", options)
+	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Casualty", options)
 	options.args.profile = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 
-	self:RegisterChatCommand("casualty", function() LibStub("AceConfigDialog-3.0"):Open("Casualty") end)
-
-	local optFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Casualty", "Casualty")
+	Casualty.optFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Casualty", "Casualty")
 
 	self:SetSinkStorage(self.db.profile.sinkOptions)
 
-	self.dead = {}
-
-	self.db.RegisterCallback(self, "OnProfileChanged", function() db = self.db.profile end)
+	self.db.RegisterCallback(self, "OnProfileChanged", "UpdateProfile")
+	self.db.RegisterCallback(self, "OnProfileCopied", "UpdateProfile")
+	self.db.RegisterCallback(self, "OnProfileReset", "UpdateProfile")
 
 	media:Register("sound", "Casualty: Single Casualty", [[Interface\Addons\Casualty\Sounds\casualty.wav]])
 	media:Register("sound", "Casualty: Multiple Casualties", [[Interface\Addons\Casualty\Sounds\casualties.wav]])
@@ -226,15 +220,19 @@ function addon:OnInitialize()
 	media:Register("sound", "Casualty: Wipe", [[Interface\Addons\Casualty\Sounds\no_survivors.wav]])
 end
 
-function addon:OnEnable()
+function Casualty:OnEnable()
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 end
 
-function addon:OnDisable()
+function Casualty:OnDisable()
 	self:UnregisterAllEvents()
 end
 
-function addon:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags)
+function Casualty:UpdateProfile()
+	db = self.db.profile
+end
+
+function Casualty:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags)
 	if eventType == "UNIT_DIED" then
 		if UnitIsFeignDeath(destName) then return end
 
@@ -242,15 +240,15 @@ function addon:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventType, sourceGU
 		local isGroup  = (bitband(destFlags, COMBATLOG_OBJECT_AFFILIATION_OUTSIDER) == 0)
 		
 		if isPlayer and isGroup then
-			if #self.dead == 0 then
-				self:ScheduleTimer(addon.Report, db.delay)
+			if #dead == 0 then
+				self:ScheduleTimer(Casualty.Report, db.delay)
 			end
-			tinsert(self.dead, destName)
+			tinsert(dead, destName)
 		end
 	end
 end
 
-function addon:WipeCheck()
+function Casualty:WipeCheck()
 	local result = true
 	if UnitInRaid("player") then
 		for i=1,GetNumRaidMembers() do
@@ -270,39 +268,37 @@ function addon:WipeCheck()
 	return result
 end
 
-function addon:Report()
-	local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("Casualty")
-	local dead = #addon.dead
+function Casualty:Report()
+	local count = #dead
 	local msg = fmt("|cffffff7f%s:|r %s", L["Casualty"], "%s")
 	local snd = db.sound.casualty
 
-	if db.wipe and addon:WipeCheck() then
+	if db.wipe and Casualty:WipeCheck() then
 		msg = fmt("|cffffff7f%s:|r %s", L["Casualty"], L["No Survivors"])
 		snd = db.sound.wipe
 	else
-		if dead > 1 then
+		if count > 1 then
 			msg = fmt("|cffffff7f%s:|r %s", L["Casualties"], "%s")
-			if dead < db.mass then
+			if count < db.mass then
 				snd = db.sound.casualties
 			else
 				snd = db.sound.catastrophe
 			end
 		end
-		msg = fmt(msg, tconcat(addon.dead, ", "))
+		msg = fmt(msg, tconcat(dead, ", "))
 	end
-	addon:Pour(msg, db.color.r, db.color.g, db.color.b)
+	Casualty:Pour(msg, db.color.r, db.color.g, db.color.b)
 	if db.noise then
-		local media = LibStub("LibSharedMedia-3.0")
 		local sound = media:Fetch("sound",snd)
 		if sound then PlaySoundFile(sound) end
 	end
-	wipe(addon.dead)
+	wipe(dead)
 end
 
-function addon:Test()
-	tinsert(self.dead, "Alice")
-	tinsert(self.dead, "Bob")
-	tinsert(self.dead, "Charlie")
-	addon:Report()
+function Casualty:Test()
+	tinsert(dead, "Alice")
+	tinsert(dead, "Bob")
+	tinsert(dead, "Charlie")
+	self:ScheduleTimer(Casualty.Report, db.delay)
 end
 
