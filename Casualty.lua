@@ -69,7 +69,7 @@ local options = {
 					name = L["Announcement Delay"],
 					desc = L["Minimum delay between announcements"],
 					min = 0,
-					max = 5,
+					max = 10,
 					step = 1,
 					get = function()
 						return db.delay
