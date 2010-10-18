@@ -217,10 +217,10 @@ function Casualty:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "UpdateProfile")
 	self.db.RegisterCallback(self, "OnProfileReset", "UpdateProfile")
 
-	media:Register("sound", "Casualty: Single Casualty", [[Interface\Addons\Casualty\Sounds\casualty.wav]])
-	media:Register("sound", "Casualty: Multiple Casualties", [[Interface\Addons\Casualty\Sounds\casualties.wav]])
-	media:Register("sound", "Casualty: Catastrophe", [[Interface\Addons\Casualty\Sounds\mass_casualties.wav]])
-	media:Register("sound", "Casualty: Wipe", [[Interface\Addons\Casualty\Sounds\no_survivors.wav]])
+	media:Register("sound", "Casualty: Single Casualty", [[Interface\Addons\Casualty\Sounds\casualty.mp3]])
+	media:Register("sound", "Casualty: Multiple Casualties", [[Interface\Addons\Casualty\Sounds\casualties.mp3]])
+	media:Register("sound", "Casualty: Catastrophe", [[Interface\Addons\Casualty\Sounds\mass_casualties.mp3]])
+	media:Register("sound", "Casualty: Wipe", [[Interface\Addons\Casualty\Sounds\no_survivors.mp3]])
 end
 
 function Casualty:OnEnable()

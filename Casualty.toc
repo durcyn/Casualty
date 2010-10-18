@@ -1,4 +1,4 @@
-## Interface: 30300
+## Interface: 40000
 ## Title: Casualty
 ## Notes: Monitors for friendly deaths and announces them as in Myth: The Fallen Lords
 ## Author: Carys of Terenas
