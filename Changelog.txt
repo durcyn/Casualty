@@ -1,8 +1,0 @@
-3.0.0  Updated for 2.4 combat log changes, rewritten almost from scratch for Ace3/LibSink-2.0
-2.1.0  Updated for 2.10; also changed to use Ace2 libraries (big rewrite of a small mod)
-2.0.0  Updated for version 2.0
-1.3.0  Added SCT and color pickers; fixed defect with setting to defaults
-1.2.4  Added "mass casualties" and "no survivors" messages
-1.2.3  Fixed multiple casualties being reported as single
-1.2.2  Fixes for memory usage, YakHelpers change, target changes
-1.2.0  Added config panel, switched to YakHelpers scheduler, added options to filter for party/group, destroyed objects, etc
