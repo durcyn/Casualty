@@ -235,7 +235,7 @@ function Casualty:UpdateProfile()
 	db = self.db.profile
 end
 
-function Casualty:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags)
+function Casualty:COMBAT_LOG_EVENT_UNFILTERED(event, timestamp, eventType, hideCaster, sourceGUID, sourceName, sourceFlags, sourceFlags2, destGUID, destName, destFlags, destFlags2)
 	if eventType == "UNIT_DIED" then
 		if UnitIsFeignDeath(destName) then return end
 
